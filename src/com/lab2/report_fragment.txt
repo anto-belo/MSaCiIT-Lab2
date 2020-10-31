@@ -1,0 +1,50 @@
+while (x > 0) {
+    switch (x) {
+        case 1:
+            if (a > 0) {
+                for (int i = 0; i < a; i++) {
+                    for (int j = 0; j < i; j++) {
+                        A[i][j] = i * j;
+                        switch (A[i][j]) {
+                            case 6:
+                                A[i][j] *= 2;
+                                break;
+                            case 8:
+                                A[i][j] += 3;
+                            case 12:
+                                for (int k = 0; k < 10; k++) {
+                                    A[i][j] += k;
+                                }
+                                break;
+                            case 14:
+                                A[i][j] += (i + j);
+                                break;
+                            default:
+                                A[i][j] = 0;
+                        }
+                    }
+                }
+            } else if (a == 0) {
+                System.out.println("WOW!");
+            }
+            break;
+        case 2:
+            if (a < -1) {
+                System.out.println("WOW!");
+            } else if (a < -0.5) {
+                for (int i = 0; i < a; i += 0.01) {
+                    for (int j = 0; j < a - i; j++) {
+                        System.out.println("WOW! " + (i * j));
+                    }
+                }
+            } else if (a < 0) {
+                x = 0;
+            } else if (a < 1) {
+                x += a;
+            } else {
+                for (int k = 0; k < x * a; k++) {
+                    System.out.println("NOT WOW!");
+                }
+            }
+    }
+}
