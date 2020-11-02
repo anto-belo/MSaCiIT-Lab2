@@ -2,138 +2,177 @@ package com.lab2;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.LinkedList;
 import java.util.Scanner;
 
 public class Main {
-    static int attachments = 0; // считает количество скобок при вложенности
-    static boolean flagAttachment = false; // появляется флаг при вложенности
+    static int CL = 0; // количество условных операторов
+    static int CLI = 0; // количество условных операторов
+    static int deep = 0; // количество вложенности
+    static int operators = 0; // количество операторов (все, кроме ключевых слов)
+    static int brackets = 0;
+    static boolean isNesting = false;
+    static LinkedList<Node> switchPosition = new LinkedList<>();
 
     public static void main(String[] args) throws FileNotFoundException {
-
         Scanner scan = new Scanner(new File("code.txt"));
-        int CL = 0; // количество условных операторов
-        int CLI = 0; // количество вложенности
-        int operators = 0; // количество операторов (все, кроме ключевых слов)
-        boolean isDefault = false; // флаг при нахождении в default
+        countValues(scan);
 
+        System.out.println("CL = " + CL);
+        System.out.println("cl = " + Math.round(((double) CL / operators) * 100) / 100.0);
+        System.out.println("CLI = " + CLI);
+    }
+
+    private static void countValues(Scanner scan){
         while (scan.hasNextLine()) {
             String line = scan.nextLine();
-//			строка не должна содержать любой из операторов, скобки, импорты
             boolean isImportantSign = line.contains("case") || line.contains("default") || line.contains("if")
                     || line.contains("else") || line.contains("for") || line.contains("switch") || line.contains("while") || line.contains("do");
             if (!(line.contains("package") || line.contains("import") || line.contains("class") || line.contains("public")
                     || (line.contains("{") && !isImportantSign) || (line.contains("}") && !isImportantSign) || line.matches("[ ]*") || line.matches("[	]*"))) {
                 operators++;
             }
-
-            if (line.matches(".*case.*")) {
-                if (flagAttachment) {
-                    CL++;
-                    CLI++;
-                } else {
-                    CL++;
-                }
-                flagAttachment = true;
-                attachments++;
-            }
-
-//			если строка содержит default и флаг на вложенность, то +1 к количеству условных операторов и вложенности,
-//			если нет флага на вложенность, то +1 к количеству условных операторов
-//			активируется флаг на default и если он вложен, тогда +1 к вложенности, если нет, тогда флаг на вложенность default снимается
-            if (line.matches(".*default.*")) {
-                isDefault = true;
-                if (flagAttachment) {
-                    CL++;
-                    attachments--;
-                } else {
-                    attachments = 0;
-                    isDefault = false;
-                    CL++;
-                }
-            }
-
-//			при попадании в break вне default и если есть вложенность, тогда вложенность уменьшается на 1
-            if (line.matches(".*break.*") && !isDefault) {
-                if (flagAttachment) {
-                    attachments--;
-                }
-            }
-
-//			при попадании в break в default вложенность увеличивается на 1 и вложенность default снимается
-            if (line.matches(".*break.*") && isDefault) {
-                isDefault = false;
-                attachments++;
-                check(line, isDefault);
-            }
-
-//			если строка содержит for или while флаг на вложенность, то +1 к количеству условных операторов и вложенности,
-//			если нет флага на вложенность, то +1 к количеству условных операторов
-//			появляется вложенность, то есть меняется флаг и +1 к вложенности
-            if (line.matches(".*for.*") || line.matches(".*while.*")) {
-                if (flagAttachment) {
-                    CL++;
-                    CLI++;
-                } else {
-                    CL++;
-                }
-                flagAttachment = true;
-                attachments++;
-            }
-
-//			при попадании в if или else флаг на вложенность, то +1 к количеству условных операторов и вложенности,
-//			если нет флага на вложенность, то +1 к количеству условных операторов
-//			активируется флаг на вложенность
-            if (line.matches(".*if[ ]*[(].*") || line.matches(".*else.*")) {
-                check(line, isDefault);
-                if (flagAttachment) {
-                    CL++;
-                    CLI++;
-                } else {
-                    CL++;
-                }
-                flagAttachment = true;
-            }
-
-//			при наличии скобок в строке запускается проверка на вложенность
-            if (line.matches(".*[{]+.*") || line.matches(".*[}]+.*")) {
-                flagAttachment = true;
-                check(line, isDefault);
-            }
-        }
-
-//		вывод результатов
-        System.out.println("CL = " + CL);
-        System.out.println("cl = " + Math.round(((double) CL / operators) * 100) / 100.0);
-        System.out.println("CLI = " + CLI);
-    }
-
-    //	проверяет вложенность
-//	если строка содержит скобки, то либо +1, либо -1 к вложенности
-//	также отменяет вложенность
-    public static void check(String line, boolean isDefault) {
-//		добавляет вложенность, если она активированна
-        if (line.matches(".*[{].*")) {
-            if (flagAttachment) {
-                attachments++;
-            }
-        }
-
-//		уменьшает вложенность, если она активированна
-        if (line.matches(".*[}].*")) {
-            if (flagAttachment) {
-                attachments--;
-            }
-        }
-
-//		если вложенность равна 0 и код не содрежит case и не находится в default, тогда вложенность отменяется
-        if (attachments == 0 && !line.matches(".*case.*") && !isDefault) {
-            flagAttachment = false;
-        }
-
-//		если вложенность равна 0 и код  содрежит default, тогда вложенность отменяется
-        if (attachments == 0 && line.matches(".*default.*")) {
-            flagAttachment = false;
+            checkLine(line, scan);
         }
     }
 
+    public static void checkLine(String line, Scanner scanner) {
+        if (line.contains("switch")){
+            for (int i = 0; i < switchPosition.size(); i++) {
+                if (switchPosition.get(i).switchPosition == brackets){
+                    deep = switchPosition.get(i).deep;
+                    if (isNesting)
+                        deep++;
+                    switchPosition.remove(i);
+                    break;
+                }
+            }
+            switchPosition.add(new Node(brackets, deep));
+        }
+
+        if (line.contains("case")) {
+            countParameters();
+            for (int i = 0; i < switchPosition.size(); i++) {
+                if (switchPosition.get(i).switchPosition == brackets){
+                    deep = switchPosition.get(i).deep;
+                    if (isNesting)
+                        deep++;
+                    switchPosition.remove(i);
+                    break;
+                }
+            }
+            switchPosition.add(new Node(brackets, deep));
+        }
+
+        if (line.contains("default")) {
+            countParameters();
+            for (int i = 0; i < switchPosition.size(); i++) {
+                if (switchPosition.get(i).switchPosition == brackets){
+                    deep = switchPosition.get(i).deep;
+                    switchPosition.remove(i);
+                    break;
+                }
+            }
+        }
+
+        if (line.contains("if") && line.contains("{")) {
+            countParameters();
+        }
+
+        if (line.contains("else") && line.contains("{")) {
+            isNesting = true;
+        }
+
+        if (line.contains("if") && !line.contains("{")) {
+            countParameters();
+            checkNext(scanner);
+        }
+
+        if (line.contains("for") && line.contains("{")) {
+            countParameters();
+        }
+
+        if (line.contains("for") && !line.contains("{")) {
+            countParameters();
+            checkNext(scanner);
+        }
+
+        if (line.contains("while") && line.contains("{")) {
+            countParameters();
+        }
+
+        if (line.contains("while") && !line.contains("{") && line.trim().charAt(line.length() - 1) != ';') {
+            countParameters();
+            checkNext(scanner);
+        }
+
+        if (line.contains("while") && !line.contains("{") && line.trim().charAt(line.length() - 1) == ';') {
+            CL++;
+            if (isNesting) {
+                deep++;
+            }
+        }
+
+        if (line.contains("else") && !line.contains("{")) {
+            isNesting = true;
+            checkNext(scanner);
+        }
+
+        if (line.contains("else if"))
+            deep++;
+
+
+        if (line.contains("{")) {
+            brackets++;
+        }
+
+        if (line.contains("}")) {
+            brackets--;
+            CLI = Math.max(CLI, deep);
+            deep--;
+            for (int i = 0; i < switchPosition.size(); i++) {
+                if (switchPosition.get(i).switchPosition == brackets){
+                    deep = switchPosition.get(i).deep;
+                    switchPosition.remove(i);
+                    break;
+                }
+            }
+        }
+
+        if (brackets == 0) {
+            isNesting = false;
+        }
+    }
+
+    private static void countParameters(){
+        CL++;
+        if (isNesting) {
+            deep++;
+        }
+        isNesting = true;
+    }
+
+    private static void checkNext(Scanner scanner) {
+        String nextLine;
+        if (scanner.hasNextLine()) {
+            nextLine = scanner.nextLine();
+            checkLine(nextLine, scanner);
+            if (brackets == 0) {
+                isNesting = false;
+            }
+        }
+        CLI = Math.max(CLI, deep);
+        deep--;
+    }
+
+    static class Node {
+        int switchPosition;
+        int deep;
+
+        Node(int switchPosition, int deep){
+            this.switchPosition = switchPosition;
+            this.deep = deep;
+        }
+    }
 }
+
