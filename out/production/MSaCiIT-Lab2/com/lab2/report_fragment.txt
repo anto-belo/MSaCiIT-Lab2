@@ -1,0 +1,97 @@
+while (x > 0) {
+    switch (x) {
+        case 1:
+            if (a > 0) {
+                for (int i = 0; i < a; i++) {
+                    for (int j = 0; j < i; j++) {
+                        A[i][j] = i * j;
+                        switch (A[i][j]) {
+                            case 6:
+                                A[i][j] *= 2;
+                                break;
+                            case 8:
+                                A[i][j] += 3;
+                            case 12:
+                                for (int k = 0; k < 10; k++) {
+                                    A[i][j] += k;
+                                }
+                                break;
+                            case 14:
+                                A[i][j] += (i + j);
+                                break;
+                            default:
+                                A[i][j] = 0;
+                        }
+                    }
+                }
+            } else if (a == 0) {
+                for (int i = 0; i < 100; i++) {
+                    switch (i % 7) {
+                        case 0:
+                        case 1:
+                            A[i][i] = i;
+                            break;
+                        case 2:
+                            System.out.println("WOW!");
+                            break;
+                        default:
+                            for (int j = 0; j < i; j++) {
+                                for (int k = 0; k < j; k++) {
+                                    for (int h = 0; h < k; h++) {
+                                        B[i][j][k][h] = i * j * k * h;
+                                    }
+                                }
+                            }
+                    }
+                    for (int j = 0; j < i; j++) {
+                        System.out.println("WOW!");
+                    }
+                }
+            }
+            break;
+        case 2:
+            if (a < -1) {
+                switch (a) {
+                    case -5:
+                        System.out.println("WOW!");
+                    case -4:
+                        System.out.println("WOW!");
+                    default:
+                }
+            } else if (-1 <= a && a < -0.5) {
+                for (int i = 0; i < a; i += 0.01) {
+                    System.out.println("WOW!");
+                }
+            } else if (-0.5 <= a && a < 0) {
+                x = 0;
+            } else if (0 <= a && a < 1) {
+                x += a;
+            } else {
+                switch (a) {
+                    case 2:
+                        x *= a;
+                        break;
+                    case 3:
+                        x += 3;
+                        break;
+                    case 4:
+                    case 5:
+                        for (int i = a; i < 10; i++) {
+                            switch (i) {
+                                case 0:
+                                    x += i;
+                                    break;
+                                case 1:
+                                    x *= i;
+                                    break;
+                                case 2:
+                                    x /= i;
+                                    break;
+                                default:
+                                    x++;
+                            }
+                        }
+                }
+            }
+    }
+}
